@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RisparmioAI — Trova i tuoi sprechi in 60 secondi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green: #00C170;
+  --green-dark: #009955;
+  --green-dim: rgba(0,193,112,0.12);
+  --ink: #0D0D0D;
+  --ink-2: #555;
+  --ink-3: #999;
+  --bg: #F9F9F7;
+  --surface: #fff;
+  --border: rgba(0,0,0,0.09);
+  --border-mid: rgba(0,0,0,0.15);
+  --red-dim: #FFF0EE;
+  --red: #D63C2A;
+  --amber-dim: #FFF8EC;
+  --amber: #B86D00;
+  --display: 'Syne', sans-serif;
+  --body: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+
+.logo em { color: var(--green); font-style: normal; }
+
+.pill {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 100px;
+  background: var(--green-dim);
+  color: var(--green-dark);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* HERO */
+.hero {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 64px 24px 0;
+  text-align: center;
+}
+
+.hero-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--green-dark);
+  background: var(--green-dim);
+  padding: 5px 14px;
+  border-radius: 100px;
+  margin-bottom: 24px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  font-family: var(--display);
+  font-size: clamp(34px, 6vw, 56px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+.hero h1 .accent {
+  color: var(--green);
+  position: relative;
+  display: inline-block;
+}
+
+.hero p {
+  font-size: 17px;
+  color: var(--ink-2);
+  line-height: 1.65;
+  max-width: 480px;
+  margin: 0 auto 48px;
+  font-weight: 300;
+}
+
+/* STATS ROW */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 56px;
+  flex-wrap: wrap;
+}
+
+.stat { text-align: center; }
+
+.stat-n {
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: -0.03em;
+}
+
+.stat-l {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
+/* MAIN CARD */
+.card-wrap {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px;
+  box-shadow: 0 2px 24px rgba(0,0,0,0.04);
+}
+
+.card-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 180px;
+  padding: 16px;
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+textarea:focus { border-color: var(--green); }
+textarea::placeholder { color: var(--ink-3); }
+
+.chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  margin-bottom: 24px;
+}
+
+.chip {
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--border-mid);
+  background: transparent;
+  cursor: pointer;
+  color: var(--ink-2);
+  font-family: var(--body);
+  transition: all 0.15s;
+}
+
+.chip:hover { background: var(--green-dim); border-color: var(--green); color: var(--green-dark); }
+
+.btn-main {
+  width: 100%;
+  padding: 17px;
+  background: var(--green);
+  color: #fff;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-main:hover { background: var(--green-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,193,112,0.3); }
+.btn-main:active { transform: translateY(0); }
+.btn-main:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.privacy {
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 16px;
+}
+
+/* ERROR */
+.error-box {
+  display: none;
+  background: #FFF0EE;
+  border: 1px solid #FFCCC7;
+  border-radius: 10px;
+  padding: 13px 16px;
+  font-size: 13px;
+  color: var(--red);
+  margin-top: 12px;
+}
+
+/* LOADING */
+.loading {
+  display: none;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.loading-track {
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.loading-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--green), #00E890);
+  border-radius: 100px;
+  transition: width 0.5s ease;
+}
+
+.loading p {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+/* RESULTS */
+.results { display: none; }
+
+.results-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.results-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 6px;
+}
+
+.saving-amount {
+  font-family: var(--display);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.saving-label {
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+
+.findings { margin-bottom: 24px; }
+
+.finding {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  animation: fadeUp 0.4s ease forwards;
+  opacity: 0;
+}
+
+.finding:last-child { border-bottom: none; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.f-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.f-icon.red { background: var(--red-dim); }
+.f-icon.amber { background: var(--amber-dim); }
+.f-icon.green { background: var(--green-dim); }
+
+.f-body { flex: 1; }
+
+.f-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+
+.f-desc {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+
+.f-badge {
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.f-badge.red { background: var(--red-dim); color: var(--red); }
+.f-badge.amber { background: var(--amber-dim); color: var(--amber); }
+.f-badge.green { background: var(--green-dim); color: var(--green-dark); }
+
+/* SUMMARY */
+.summary {
+  background: var(--ink);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+
+.summary h3 {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 10px;
+}
+
+.summary p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.65;
+}
+
+.summary .hl { color: var(--green); font-weight: 500; }
+
+/* ACTIONS */
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-ghost {
+  flex: 1;
+  min-width: 120px;
+  padding: 13px;
+  background: transparent;
+  border: 1px solid var(--border-mid);
+  border-radius: 10px;
+  font-family: var(--body);
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.btn-ghost:hover { border-color: var(--green); color: var(--green-dark); }
+
+.btn-share {
+  flex: 2;
+  min-width: 160px;
+  padding: 13px;
+  background: var(--green);
+  border: none;
+  border-radius: 10px;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+
+.btn-share:hover { background: var(--green-dark); }
+
+/* SHARE FALLBACK */
+.share-fallback {
+  margin-top: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border-mid);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.share-fallback p {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+
+.share-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.share-input-row input {
+  flex: 1;
+  font-size: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--body);
+  outline: none;
+}
+
+.share-input-row button {
+  padding: 8px 14px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: var(--body);
+  white-space: nowrap;
+}
+
+.share-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.share-btns a {
+  flex: 1;
+  min-width: 80px;
+  text-align: center;
+  padding: 9px 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  text-decoration: none;
+  font-weight: 500;
+  font-family: var(--body);
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 32px 24px;
+  font-size: 12px;
+  color: var(--ink-3);
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 480px) {
+  header { padding: 14px 18px; }
+  .hero { padding: 40px 18px 0; }
+  .card { padding: 24px 20px; }
+  .card-wrap { padding: 0 16px 60px; }
+  .saving-amount { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Risparmio<em>AI</em></div>
+  <span class="pill">100% Gratuito</span>
+</header>
+
+<div class="hero">
+  <span class="hero-tag">Analisi AI delle spese</span>
+  <h1>Quanti soldi stai<br><span class="accent">buttando ogni mese?</span></h1>
+  <p>Incolla le tue spese ricorrenti. L'AI le analizza in 60 secondi e ti mostra esattamente dove stai sprecando denaro — gratis, nessun dato bancario richiesto.</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-n">60s</div><div class="stat-l">per l'analisi</div></div>
+    <div class="stat"><div class="stat-n">150€</div><div class="stat-l">spreco medio mensile</div></div>
+    <div class="stat"><div class="stat-n">0€</div><div class="stat-l">costo del servizio</div></div>
+  </div>
+</div>
+
+<div class="card-wrap">
+  <div class="card">
+
+    <div id="inputSection">
+      <div class="card-label">Le tue spese mensili</div>
+      <textarea id="spesaInput" placeholder="Scrivi o incolla le tue spese, una per riga. Esempio:
+
+Netflix: 17,99€
+Spotify: 10,99€
+Palestra: 45€
+Luce: 120€
+Gas: 85€
+Amazon Prime: 4,99€
+Telefono: 25€
+Internet: 30€"></textarea>
+
+      <div class="chips">
+        <button class="chip" onclick="loadEx('base')">📋 Esempio base</button>
+        <button class="chip" onclick="loadEx('famiglia')">👨‍👩‍👧 Famiglia</button>
+        <button class="chip" onclick="loadEx('pro')">💼 Professionista</button>
+      </div>
+
+      <button class="btn-main" id="analyzeBtn" onclick="analizza()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Analizza le mie spese
+      </button>
+      <div class="error-box" id="errorBox"></div>
+      <p class="privacy">🔒 Nessun dato salvato · Analisi completamente privata</p>
+    </div>
+
+    <div class="loading" id="loadingSection">
+      <div class="loading-track"><div class="loading-bar" id="loadBar"></div></div>
+      <p id="loadMsg">Analizzando le tue spese...</p>
+    </div>
+
+    <div class="results" id="resultsSection">
+      <div class="results-top">
+        <div>
+          <div class="results-title">Risparmio possibile</div>
+          <div class="saving-amount" id="savingAmount">—</div>
+          <div class="saving-label">al mese · <span id="savingAnno"></span> all'anno</div>
+        </div>
+      </div>
+
+      <div class="findings" id="findingsList"></div>
+
+      <div id="confrontoBox" style="display:none; background: var(--green-dim); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; font-size: 14px; color: var(--green-dark);"></div>
+
+      <div class="summary" id="summaryBox">
+        <h3>Cosa fare adesso</h3>
+        <p id="summaryText"></p>
+      </div>
+
+      <div class="actions">
+        <button class="btn-ghost" onclick="reset()">← Nuova analisi</button>
+        <button class="btn-share" id="shareBtn" onclick="condividi()">📤 Condividi il risparmio</button>
+      </div>
+      <div id="shareFallback"></div>
+
+      <div id="chartCard" style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+        <div class="card-label">Andamento dei tuoi sprechi</div>
+        <canvas id="trendChart" height="180"></canvas>
+      </div>
+
+      <div style="text-align:center; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+        <p style="font-size:13px; color:var(--ink-3); margin-bottom:14px;">💡 Le tue spese cambiano nel tempo — lascia la tua email e ti ricordiamo noi di ricontrollarle ogni mese</p>
+        <div id="emailFormBox" style="display:flex; gap:8px; max-width:380px; margin:0 auto; flex-wrap:wrap; justify-content:center;">
+          <input type="email" id="reminderEmail" placeholder="la-tua-email@esempio.it" style="flex:1; min-width:200px; padding:10px 14px; border:1px solid var(--border-mid); border-radius:10px; font-family:var(--body); font-size:13px; outline:none;" />
+          <button class="chip" onclick="attivaPromemoria()" id="reminderBtn" style="background:var(--green); color:#fff; border-color:var(--green);">🔔 Attiva promemoria</button>
+        </div>
+        <p id="emailConfirm" style="display:none; font-size:13px; color:var(--green-dark); margin-top:10px;">✓ Promemoria attivato! Ti aspettiamo tra 30 giorni.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  RisparmioAI · Analisi gratuita delle spese con intelligenza artificiale · Nessun dato bancario richiesto
+</footer>
+
+<script>
+
+const esempi = {
+  base: `Netflix: 17,99€\nSpotify: 10,99€\nPalestra: 45€\nLuce: 120€\nGas: 85€\nAmazon Prime: 4,99€\nTelefono: 25€\nInternet: 30€\nAssicurazione auto: 80€`,
+  famiglia: `Netflix: 17,99€\nDisney+: 8,99€\nPrime Video: 4,99€\nSpotify family: 16,99€\nPalestra x2: 90€\nLuce: 180€\nGas: 130€\nInternet: 35€\nTelefono x2: 60€\nAssicurazione auto: 100€\nSky Cinema: 20€\nNintendo Online: 3,99€\niCloud 200GB: 2,99€\nYouTube Premium: 13,99€`,
+  pro: `Adobe Creative Cloud: 59,99€\nNotion Pro: 8€\nChatGPT Plus: 20€\nLinkedIn Premium: 29,99€\nDropbox Plus: 11,99€\nZoom Pro: 13,99€\nSpotify: 10,99€\nAmazon Prime: 4,99€\nNetflix: 17,99€\nTelefono business: 45€\nInternet fibra: 30€\nLuce: 90€\nAntivirus: 3,99€`
+};
+
+function loadEx(tipo) {
+  document.getElementById('spesaInput').value = esempi[tipo];
+}
+
+const GEMINI_KEY = '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';
+
+async function analizza() {
+  const input = document.getElementById('spesaInput').value.trim();
+  if (input.length < 10) {
+    showError('Inserisci almeno qualche spesa per procedere.');
+    return;
+  }
+  hideError();
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('inputSection').style.display = 'none';
+  document.getElementById('loadingSection').style.display = 'block';
+
+  const msgs = ['Analizzando le tue spese...', 'Confrontando con le medie italiane...', 'Identificando gli sprechi...', 'Calcolando il risparmio possibile...'];
+  let mi = 0;
+  const bar = document.getElementById('loadBar');
+  const msg = document.getElementById('loadMsg');
+  const iv = setInterval(() => {
+    mi++;
+    bar.style.width = (mi / msgs.length * 80) + '%';
+    if (msgs[mi]) msg.textContent = msgs[mi];
+  }, 900);
+
+  const prompt = `Sei un esperto di finanza personale italiana. Analizza OGNI spesa mensile elencata dall'utente e identifica sprechi concreti.
+
+REGOLE IMPORTANTI:
+- Analizza OGNI voce di spesa, non ignorarne nessuna
+- Il risparmio_mensile deve essere REALISTICO — mai superiore al costo della spesa stessa
+- Se una spesa è nella media di mercato, il risparmio è 0 o minimo
+- Sii conservativo: meglio sottostimare che esagerare
+
+COME DARE CONSIGLI (fondamentale):
+- MAI consigliare semplicemente "cancella l'abbonamento" come unica opzione
+- Proponi SEMPRE un'alternativa concreta e realistica: un piano più economico dello stesso servizio, la condivisione familiare/gruppo se disponibile, un periodo di pausa, oppure un fornitore concorrente con prezzo migliore
+- Esempio corretto: "Netflix Premium a 17,99€ — se non guardi in 4K contemporaneamente su più schermi, il piano Standard a 12,99€ ti fa risparmiare 5€/mese senza rinunciare al servizio"
+- Esempio corretto: "Palestra a 45€ — verifica se esiste un piano solo-weekend o off-peak della stessa palestra, spesso 15-20€ più economico"
+- Esempio SBAGLIATO da evitare: "Cancella questo abbonamento che non usi" senza altro contesto
+- Per bollette luce/gas/telefono/internet: consiglia sempre di confrontare le tariffe di mercato, mai di "smettere di pagare" 
+
+SPESE DA ANALIZZARE:
+${input}
+
+Rispondi SOLO con JSON valido, niente testo extra, niente backtick. Formato:
+{
+  "totale_risparmio": 150,
+  "anno": 1800,
+  "findings": [
+    {
+      "titolo": "Titolo breve e specifico",
+      "descrizione": "Spiegazione concisa e consiglio pratico con numeri realistici",
+      "risparmio_mensile": 12,
+      "tipo": "rosso",
+      "emoji": "🔴"
+    }
+  ],
+  "sommario": "2-3 frasi che riassumono ESATTAMENTE i findings trovati sopra, con gli stessi numeri. Cita il totale mensile e annuale calcolato dalla somma dei risparmio_mensile."
+}
+Tipi: rosso=spreco evidente, arancione=da ottimizzare, verde=consiglio positivo. Da 3 a 6 findings. Il totale_risparmio deve essere la somma REALE dei risparmi calcolati.`;
+
+async function chiamaAI(prompt, tentativo = 1) {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GEMINI_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0,
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    const data = await res.json();
+    if (!data.choices) throw new Error('API error: ' + JSON.stringify(data));
+    const raw = data.choices[0].message.content;
+    let clean = raw.replace(/```json|```/g, '').trim();
+    const jsonStart = clean.indexOf('{');
+    const jsonEnd = clean.lastIndexOf('}');
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      clean = clean.slice(jsonStart, jsonEnd + 1);
+    }
+    try {
+      return JSON.parse(clean);
+    } catch(e) {
+      const fixed = clean
+        .replace(/,\s*}/g, '}')
+        .replace(/,\s*]/g, ']')
+        .replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3')
+        .replace(/:\s*'([^']*)'/g, ': "$1"');
+      try {
+        return JSON.parse(fixed);
+      } catch(e2) {
+        if (tentativo < 2) return chiamaAI(prompt, tentativo + 1);
+        throw new Error('JSON non valido dopo 2 tentativi');
+      }
+    }
+  }
+
+  try {
+    const parsed = await chiamaAI(prompt);
+    clearInterval(iv);
+    bar.style.width = '100%';
+    setTimeout(() => mostraRisultati(parsed), 400);
+  } catch (e) {
+    clearInterval(iv);
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('inputSection').style.display = 'block';
+    document.getElementById('analyzeBtn').disabled = false;
+    console.error('Errore dettagliato:', e);
+    showError('Errore: ' + (e.message || 'Analisi non riuscita. Riprova tra un momento.'));
+  }
+}
+
+function mostraRisultati(data) {
+  document.getElementById('loadingSection').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'block';
+  const totale = Math.round(data.findings.reduce((sum, f) => sum + (f.risparmio_mensile || 0), 0) * 100) / 100;
+  document.getElementById('savingAmount').textContent = totale.toFixed(2).replace('.', ',') + '€';
+  document.getElementById('savingAnno').textContent = (Math.round(totale * 12 * 100) / 100).toFixed(2).replace('.', ',') + '€';
+
+  const list = document.getElementById('findingsList');
+  list.innerHTML = '';
+  const cm = { rosso: 'red', arancione: 'amber', verde: 'green' };
+  data.findings.forEach((f, i) => {
+    const c = cm[f.tipo] || 'amber';
+    const el = document.createElement('div');
+    el.className = 'finding';
+    el.style.animationDelay = (i * 0.1) + 's';
+    el.innerHTML = `
+      <div class="f-icon ${c}">${f.emoji}</div>
+      <div class="f-body">
+        <div class="f-title">${f.titolo}</div>
+        <div class="f-desc">${f.descrizione}</div>
+      </div>
+      ${f.risparmio_mensile > 0 ? `<div class="f-badge ${c}">-${(Math.round(f.risparmio_mensile * 100) / 100).toFixed(2).replace('.', ',')}€/m</div>` : ''}
+    `;
+    list.appendChild(el);
+  });
+
+  const sprechiRossi = data.findings.filter(f => f.tipo === 'rosso');
+  const sprechiArancioni = data.findings.filter(f => f.tipo === 'arancione');
+  const nSprechi = sprechiRossi.length + sprechiArancioni.length;
+  const rispAnno = (Math.round(totale * 12 * 100) / 100).toFixed(2).replace('.', ',');
+  const sommario = nSprechi > 0
+    ? `Abbiamo trovato <span class="hl">${nSprechi} spread${nSprechi === 1 ? 'o' : 'chi'}</span> nelle tue spese mensili. Risparmiando su questi potresti mettere da parte <span class="hl">${totale.toFixed(2).replace('.', ',')}€ al mese</span>, ovvero <span class="hl">${rispAnno}€ all'anno</span>. Agisci subito per ottimizzare le tue spese!`
+    : `Le tue spese sembrano già ottimizzate. Continua a monitorarle regolarmente per individuare nuovi sprechi!`;
+  document.getElementById('summaryText').innerHTML = sommario;
+
+  mostraConfronto(totale);
+  salvaAnalisi(totale);
+}
+
+function reset() {
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('shareFallback').innerHTML = '';
+  document.getElementById('inputSection').style.display = 'block';
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('loadBar').style.width = '0%';
+}
+
+function salvaAnalisi(totale) {
+  try {
+    const storia = JSON.parse(localStorage.getItem('risparmioai_storia') || '[]');
+    storia.push({ data: new Date().toISOString(), totale });
+    if (storia.length > 12) storia.shift();
+    localStorage.setItem('risparmioai_storia', JSON.stringify(storia));
+  } catch(e) {}
+}
+
+let trendChartInstance = null;
+
+function mostraConfronto(totaleAttuale) {
+  try {
+    const storia = JSON.parse(localStorage.getItem('risparmioai_storia') || '[]');
+    const box = document.getElementById('confrontoBox');
+    if (storia.length < 1) {
+      box.innerHTML = `<p>📅 Questa è la tua prima analisi. Torna tra un mese per vedere il confronto e l'andamento nel tempo!</p>`;
+      box.style.display = 'block';
+      return;
+    }
+    const ultima = storia[storia.length - 1];
+    const diff = Math.round((totaleAttuale - ultima.totale) * 100) / 100;
+    const giorni = Math.round((new Date() - new Date(ultima.data)) / 86400000);
+    let msg;
+    if (diff < -0.5) {
+      msg = `🎉 Ottimo! Rispetto a ${giorni} giorni fa hai ridotto gli sprechi di <strong>${Math.abs(diff).toFixed(2).replace('.', ',')}€/mese</strong>`;
+    } else if (diff > 0.5) {
+      msg = `⚠️ Rispetto a ${giorni} giorni fa i tuoi sprechi sono aumentati di <strong>${diff.toFixed(2).replace('.', ',')}€/mese</strong> — controlla cosa è cambiato`;
+    } else {
+      msg = `📊 Stabile rispetto a ${giorni} giorni fa. Continua a monitorare le tue spese!`;
+    }
+    box.innerHTML = `<p>${msg}</p>`;
+    box.style.display = 'block';
+
+    disegnaGrafico(storia, totaleAttuale);
+  } catch(e) {}
+}
+
+function disegnaGrafico(storia, totaleAttuale) {
+  const puntiCompleti = [...storia, { data: new Date().toISOString(), totale: totaleAttuale }];
+  if (puntiCompleti.length < 2) return;
+
+  const chartCard = document.getElementById('chartCard');
+  chartCard.style.display = 'block';
+
+  const labels = puntiCompleti.map(p => {
+    const d = new Date(p.data);
+    return d.toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
+  });
+  const valori = puntiCompleti.map(p => p.totale);
+
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if (trendChartInstance) trendChartInstance.destroy();
+
+  trendChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Sprechi mensili (€)',
+        data: valori,
+        borderColor: '#00C170',
+        backgroundColor: 'rgba(0,193,112,0.1)',
+        fill: true,
+        tension: 0.3,
+        pointBackgroundColor: '#00C170',
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: v => v + '€' } }
+      }
+    }
+  });
+}
+
+function condividi() {
+  const amount = document.getElementById('savingAmount').textContent;
+  const text = `Ho scoperto che posso risparmiare ${amount} al mese grazie a RisparmioAI! 💚 Analisi gratuita in 60 secondi → risparmioai.netlify.app`;
+  if (navigator.share) { navigator.share({ title: 'RisparmioAI', text }); return; }
+  const fb = document.getElementById('shareFallback');
+  if (fb.innerHTML) { fb.innerHTML = ''; return; }
+  fb.innerHTML = `
+    <div class="share-fallback">
+      <p>Copia e condividi dove vuoi:</p>
+      <div class="share-input-row">
+        <input id="stxt" readonly value="${text}">
+        <button onclick="navigator.clipboard.writeText(document.getElementById('stxt').value);this.textContent='✓ Copiato';setTimeout(()=>this.textContent='Copia',2000)">Copia</button>
+      </div>
+      <div class="share-btns">
+        <a href="https://wa.me/?text=${encodeURIComponent(text)}" target="_blank" style="background:#25D366;color:#fff;">WhatsApp</a>
+        <a href="https://t.me/share/url?text=${encodeURIComponent(text)}" target="_blank" style="background:#0088cc;color:#fff;">Telegram</a>
+        <a href="https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(text)}" target="_blank" style="background:#1877F2;color:#fff;">Facebook</a>
+      </div>
+    </div>`;
+}
+
+function attivaPromemoria() {
+  const emailInput = document.getElementById('reminderEmail');
+  const email = emailInput.value.trim();
+  const btn = document.getElementById('reminderBtn');
+
+  if (!email || !email.includes('@')) {
+    emailInput.style.borderColor = 'var(--red)';
+    emailInput.placeholder = 'Inserisci una email valida';
+    return;
+  }
+
+  try {
+    const reminders = JSON.parse(localStorage.getItem('risparmioai_reminders') || '[]');
+    reminders.push({ email, data: new Date().toISOString() });
+    localStorage.setItem('risparmioai_reminders', JSON.stringify(reminders));
+  } catch(e) {}
+
+  btn.textContent = '✓ Attivato';
+  btn.disabled = true;
+  document.getElementById('emailFormBox').style.display = 'none';
+  document.getElementById('emailConfirm').style.display = 'block';
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBox');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('errorBox').style.display = 'none';
+}
+</script>
+</body>
+</html>
